@@ -1,9 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import "@fontsource-variable/space-grotesk";
-import "@fontsource/ibm-plex-sans/400.css";
-import "@fontsource/ibm-plex-sans/500.css";
-import "@fontsource/ibm-plex-sans/600.css";
+import "@fontsource-variable/nunito-sans";
 import "./globals.css";
 import { Providers } from "@/components/layout/providers";
 import { PRODUCT_NAME } from "@/lib/config/product";
@@ -17,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#14213d",
+  themeColor: "#16a34a",
   width: "device-width",
   initialScale: 1,
 };

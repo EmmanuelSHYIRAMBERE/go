@@ -40,7 +40,7 @@ export function ServiceIcon({ icon, className }: { icon: ServiceIconKey; classNa
   return (
     <span
       aria-hidden="true"
-      className={cn("flex size-11 shrink-0 items-center justify-center rounded-md bg-brand-soft text-brand-strong [&_svg]:size-5", className)}
+      className={cn("flex size-12 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-strong [&_svg]:size-5", className)}
     >
       <Icon />
     </span>
@@ -57,8 +57,8 @@ export function ServiceCard({ service, compact = false }: { service: ServiceDefi
     <Link
       href={service.href}
       className={cn(
-        "focus-ring group flex h-full gap-4 rounded-lg border border-border bg-surface shadow-card transition-[border-color,box-shadow,translate] duration-[var(--duration-base)]",
-        "hover:-translate-y-0.5 hover:border-border-strong hover:shadow-raised",
+        "focus-ring group flex h-full gap-4 rounded-xl border border-border bg-surface shadow-card transition-[border-color,box-shadow,translate] duration-[var(--duration-base)]",
+        "hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-raised",
         compact ? "items-center p-4" : "flex-col p-5",
       )}
     >
@@ -70,7 +70,7 @@ export function ServiceCard({ service, compact = false }: { service: ServiceDefi
         <p className="flex items-center gap-1 font-semibold text-ink">
           {service.name}
           <ArrowUpRight
-            className="size-4 text-ink-subtle opacity-0 transition-opacity group-hover:opacity-100"
+            className="size-4 text-brand opacity-0 transition-opacity group-hover:opacity-100"
             aria-hidden="true"
           />
         </p>

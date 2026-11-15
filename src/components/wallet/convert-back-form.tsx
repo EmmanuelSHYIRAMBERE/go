@@ -87,11 +87,11 @@ export function ConvertBackForm() {
       </div>
 
       <Alert tone="info" title="Estimate only">
-        In the service, your balance is converted back when you close the wallet or on day 30 — not on request. See the{" "}
-        <Link href="/services/refunds" className="font-semibold text-brand-strong underline">
-          Refund Guide
-        </Link>
-        .
+        In the service, your balance is converted back when you close the wallet or on day 30 — not on request. Use the{" "}
+        <Link href="/wallet" className="font-semibold text-brand-strong underline">
+          Refund tab
+        </Link>{" "}
+        on the Wallet page to estimate what returns to your card.
       </Alert>
     </form>
   );

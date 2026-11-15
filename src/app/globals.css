@@ -3,63 +3,62 @@
 /*
  * Rwanda Visitor Wallet — design tokens.
  *
- * Palette is derived from the mobile app (navy / Rwanda blue / teal on a cool
- * near-white canvas). Text tokens were tuned for >= 4.5:1 contrast on white:
- * the mobile teal (#14B8A6) and amber (#B7791F) are used only as fills/accents,
- * never as body text. Components use these semantic names only — no raw hex.
+ * Palette uses green-and-white to match the food-bundles-fn identity.
+ * Text tokens are tuned for >= 4.5:1 contrast on white. Components use
+ * these semantic names only — no raw hex values in component files.
  */
 @theme {
-  /* Brand */
-  --color-brand-navy: #14213d;
-  --color-brand-navy-soft: #1e2f55;
-  --color-brand: #1d70c9;
-  --color-brand-strong: #175ca6;
-  --color-brand-soft: #ebf4ff;
-  --color-brand-soft-strong: #d6e8fc;
-  --color-accent: #14b8a6;
-  --color-accent-strong: #0e7c70;
-  --color-accent-soft: #e2f7f4;
+  /* Brand — green-and-white identity matching food-bundles-fn */
+  --color-brand-navy: #14532d;
+  --color-brand-navy-soft: #166534;
+  --color-brand: #14532d;
+  --color-brand-strong: #14532d;
+  --color-brand-soft: #f0fdf4;
+  --color-brand-soft-strong: #dcfce7;
+  --color-accent: #166534;
+  --color-accent-strong: #14532d;
+  --color-accent-soft: #f0fdf4;
 
   /* Surfaces */
-  --color-canvas: #f5f7fb;
+  --color-canvas: #f9fafb;
   --color-surface: #ffffff;
-  --color-surface-muted: #eef2f8;
-  --color-border: #e4e9f1;
-  --color-border-strong: #cbd3e0;
+  --color-surface-muted: #f3f4f6;
+  --color-border: #e5e7eb;
+  --color-border-strong: #d1d5db;
 
   /* Text */
-  --color-ink: #172033;
-  --color-ink-muted: #4f5a6d;
-  --color-ink-subtle: #5c6779;
+  --color-ink: #111827;
+  --color-ink-muted: #4b5563;
+  --color-ink-subtle: #4b5563;
   --color-ink-inverse: #ffffff;
 
   /* Status */
-  --color-success: #11704b;
-  --color-success-soft: #e6f7ed;
-  --color-success-border: #b4e0c9;
+  --color-success: #166534;
+  --color-success-soft: #f0fdf4;
+  --color-success-border: #bbf7d0;
   --color-warning: #92570a;
   --color-warning-soft: #fef3c7;
   --color-warning-border: #f3d589;
-  --color-warning-fill: #e9a23b;
-  --color-danger: #b02e3c;
-  --color-danger-strong: #8f2431;
-  --color-danger-soft: #fee8ea;
-  --color-danger-border: #f3c0c6;
-  --color-info: #175ca6;
-  --color-info-soft: #ebf4ff;
-  --color-info-border: #bcd6f3;
+  --color-warning-fill: #f59e0b;
+  --color-danger: #b91c1c;
+  --color-danger-strong: #991b1b;
+  --color-danger-soft: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-info: #166534;
+  --color-info-soft: #f0fdf4;
+  --color-info-border: #bbf7d0;
 
   /* Charts — ordered for adjacent-series contrast */
-  --color-chart-1: #1d70c9;
-  --color-chart-2: #14b8a6;
-  --color-chart-3: #e9a23b;
+  --color-chart-1: #16a34a;
+  --color-chart-2: #22c55e;
+  --color-chart-3: #f59e0b;
   --color-chart-4: #7c5cd6;
-  --color-chart-5: #14213d;
-  --color-chart-6: #c43d4b;
+  --color-chart-5: #14532d;
+  --color-chart-6: #dc2626;
 
-  /* Typography */
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Space Grotesk Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  /* Typography — Nunito Sans to match food-bundles-fn */
+  --font-sans: "Nunito Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, monospace;
 
   /* Radii — sm for chips/inputs, md for buttons/rows, lg for cards, xl for hero panels */
@@ -68,10 +67,10 @@
   --radius-lg: 1rem;
   --radius-xl: 1.25rem;
 
-  /* Elevation — restrained, navy-tinted */
-  --shadow-card: 0 1px 2px rgb(20 33 61 / 0.04), 0 2px 8px rgb(20 33 61 / 0.05);
-  --shadow-raised: 0 4px 12px rgb(20 33 61 / 0.08), 0 1px 3px rgb(20 33 61 / 0.06);
-  --shadow-overlay: 0 24px 48px -12px rgb(20 33 61 / 0.28);
+  /* Elevation — green-tinted */
+  --shadow-card: 0 1px 2px rgb(20 83 45 / 0.04), 0 2px 8px rgb(20 83 45 / 0.05);
+  --shadow-raised: 0 4px 12px rgb(20 83 45 / 0.08), 0 1px 3px rgb(20 83 45 / 0.06);
+  --shadow-overlay: 0 24px 48px -12px rgb(20 83 45 / 0.22);
 
   /* Layout widths (reading width uses Tailwind's built-in max-w-prose, 65ch) */
   --container-form: 36rem;
@@ -189,7 +188,7 @@
     max-height: none;
   }
   dialog::backdrop {
-    background-color: rgb(20 33 61 / 0.45);
+    background-color: rgb(0 0 0 / 0.4);
   }
 
   [hidden] {

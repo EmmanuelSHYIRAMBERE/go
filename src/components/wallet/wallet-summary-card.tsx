@@ -1,4 +1,4 @@
-import { ArrowLeftRight, QrCode, ShieldCheck } from "lucide-react";
+import { ArrowLeftRight, QrCode, ShieldCheck, Undo2 } from "lucide-react";
 import { AnimatedNumber } from "@/components/motion/animated-number";
 import { ButtonLink } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/misc";
@@ -27,10 +27,13 @@ export function WalletSummaryCard({ wallet, homeCurrency, homeRateMilli, showAct
   const expiring = wallet.status === "expiring_soon" || wallet.status === "expired";
 
   return (
-    <section aria-labelledby="wallet-balance-heading" className="relative h-full overflow-hidden rounded-xl bg-brand-navy p-6 text-ink-inverse shadow-raised sm:p-8">
-      <svg aria-hidden="true" className="absolute -right-10 -bottom-10 h-48 w-72 text-brand-navy-soft" viewBox="0 0 300 200">
+    <section aria-labelledby="wallet-balance-heading" className="relative h-full overflow-hidden rounded-xl bg-brand p-6 text-ink-inverse shadow-raised sm:p-8">
+      {/* Decorative background shapes */}
+      <svg aria-hidden="true" className="absolute -right-10 -bottom-10 h-48 w-72 text-brand-strong/70" viewBox="0 0 300 200">
         <path d="M0 160c50-60 100-90 150-70s80 50 150 10v100H0z" fill="currentColor" />
       </svg>
+      <div className="absolute -top-8 -right-8 size-32 rounded-full bg-brand-strong/25" aria-hidden="true" />
+      <div className="absolute top-1/2 -left-12 size-24 rounded-full bg-brand-strong/15" aria-hidden="true" />
       <div className="relative">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 id="wallet-balance-heading" className="type-overline text-ink-inverse/70">
@@ -41,17 +44,14 @@ export function WalletSummaryCard({ wallet, homeCurrency, homeRateMilli, showAct
             {TIER_LIMITS[wallet.tier].label} tier
           </span>
         </div>
-        {/* Counts up when the card first appears and when the balance changes (e.g. after a demo top-up). */}
         <AnimatedNumber value={wallet.balanceRwf} currency="RWF" className="type-amount mt-3 block text-4xl whitespace-nowrap text-ink-inverse sm:text-5xl" />
         <p className="mt-1.5 text-sm text-ink-inverse/75">
-          ≈ {formatMoney({ amountMinor: equivalent, currency: homeCurrency })} at the sample rate · demo balance
+          ≈ {formatMoney({ amountMinor: equivalent, currency: homeCurrency })} at the sample rate · <span className="text-accent font-semibold">demo balance</span>
         </p>
 
         <div className="mt-6 max-w-md">
           <div className="mb-2 flex justify-between text-xs text-ink-inverse/75">
-            <span>
-              Day {wallet.dayNumber} of {WALLET_PERIOD_DAYS}
-            </span>
+            <span>Day {wallet.dayNumber} of {WALLET_PERIOD_DAYS}</span>
             <span className={expiring ? "font-semibold text-warning-fill" : undefined}>
               {wallet.status === "expired" ? "Ended" : `${wallet.daysRemaining} ${wallet.daysRemaining === 1 ? "day" : "days"} left`} · ends {formatDate(wallet.expiresAt)}
             </span>
@@ -69,11 +69,15 @@ export function WalletSummaryCard({ wallet, homeCurrency, homeRateMilli, showAct
           <div className="mt-6 flex flex-wrap gap-2">
             <ButtonLink href="/wallet" variant="inverse">
               <ArrowLeftRight aria-hidden="true" />
-              Top up
+              Add Money
+            </ButtonLink>
+            <ButtonLink href="/wallet?direction=convert_back" variant="on-dark">
+              <Undo2 aria-hidden="true" />
+              Refund
             </ButtonLink>
             <ButtonLink href="/services/pay-tip" variant="on-dark">
               <QrCode aria-hidden="true" />
-              Pay & tip
+              Pay &amp; Tip
             </ButtonLink>
           </div>
         ) : null}

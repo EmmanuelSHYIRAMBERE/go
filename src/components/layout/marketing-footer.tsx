@@ -63,7 +63,10 @@ export function MarketingFooter() {
             real accounts are created. This website does not represent a licensed bank or payment institution, and figures
             shown remain subject to regulator and partner approval.
           </p>
-          <p>Version {APP_VERSION}</p>
+          <p className="flex items-center gap-1.5">
+            <span aria-hidden="true">🇷🇼</span>
+            Made for visitors to Rwanda · Version {APP_VERSION}
+          </p>
         </div>
       </div>
     </footer>

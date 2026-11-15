@@ -13,12 +13,14 @@ import {
   Signal,
   Smartphone,
   Undo2,
+  TrendingUp,
+  Globe,
+  Wifi,
+  MapPin,
 } from "lucide-react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { CurrencyAmount } from "@/components/finance/currency-amount";
 import { ServiceCard } from "@/components/finance/service-card";
-import { TransactionRow } from "@/components/finance/transaction-row";
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
 import { Badge, DemoBadge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
@@ -29,15 +31,12 @@ import {
   REFUND_DEDUCTION_USD_MINOR,
   WALLET_PERIOD_DAYS,
 } from "@/lib/config/product";
-import { DEMO_EPOCH_ISO, formatDateTime } from "@/lib/dates";
+import { formatDateTime } from "@/lib/dates";
 import { buildTopUpQuote, formatRate } from "@/lib/fx";
-import { buildWalletSummary, sortNewestFirst } from "@/lib/ledger";
 import { formatMoney, formatUsd } from "@/lib/money";
 import { HELP_CATEGORIES } from "@/lib/mock-data/guides";
-import { DEMO_WALLET_ACCOUNT } from "@/lib/mock-data/profile";
 import { SAMPLE_RATE_BOARD } from "@/lib/mock-data/rates";
 import { SERVICES } from "@/lib/mock-data/services";
-import { SEED_TRANSACTIONS } from "@/lib/mock-data/transactions";
 
 export const metadata: Metadata = {
   title: { absolute: "Rwanda Visitor Wallet — a 30-day wallet for visitors (demo)" },
@@ -45,30 +44,35 @@ export const metadata: Metadata = {
 };
 
 const STEPS = [
-  { icon: MailCheck, title: "Sign up with email", body: "No local SIM or phone number. Confirm your email with a 6-digit code and secure the app with your device passkey." },
-  { icon: BadgeCheck, title: "Activate and verify", body: `A one-off ${formatUsd(ACTIVATION_FEE_USD_MINOR)} activation opens a ${WALLET_PERIOD_DAYS}-day wallet. Passport and liveness checks set your tier.` },
+  { icon: MailCheck, title: "Sign up with email", body: "No local SIM or phone number needed. Confirm your email with a 6-digit code." },
+  { icon: BadgeCheck, title: "Verify your identity", body: `A one-off ${formatUsd(ACTIVATION_FEE_USD_MINOR)} activation opens a ${WALLET_PERIOD_DAYS}-day wallet. Passport and liveness checks set your tier.` },
   { icon: CreditCard, title: "Top up from your card", body: "See the amount in your currency, the rate, the 2% fee and the francs you'll receive — before you pay." },
-  { icon: Undo2, title: "Leave with your balance", body: `When you close or reach day ${WALLET_PERIOD_DAYS}, the balance goes back to your card, minus ${formatUsd(REFUND_DEDUCTION_USD_MINOR)}.` },
+  { icon: Undo2, title: "Refund when you leave", body: `Convert eligible remaining RWF back to your original currency before departure, minus ${formatUsd(REFUND_DEDUCTION_USD_MINOR)}.` },
+] as const;
+
+/** Supported foreign currencies shown in the exchange story. */
+const SUPPORTED_CURRENCIES = [
+  { code: "USD", symbol: "$", name: "US Dollar", flag: "🇺🇸" },
+  { code: "EUR", symbol: "€", name: "Euro", flag: "🇪🇺" },
+  { code: "GBP", symbol: "£", name: "British Pound", flag: "🇬🇧" },
+  { code: "CAD", symbol: "$", name: "Canadian Dollar", flag: "🇨🇦" },
 ] as const;
 
 const FAQ_IDS = ["what-is", "sim-needed", "fee", "live-rates", "tip-fee", "end"];
 
 /** Public landing page. Server-rendered; preview figures come from the shared demo ledger. */
 export default function LandingPage() {
-  const epoch = new Date(DEMO_EPOCH_ISO);
-  const transactions = sortNewestFirst(SEED_TRANSACTIONS);
-  const wallet = buildWalletSummary(DEMO_WALLET_ACCOUNT, transactions, epoch);
-  const quote = buildTopUpQuote(10_000, "USD", SAMPLE_RATE_BOARD, epoch);
+  const quote = buildTopUpQuote(10_000, "USD", SAMPLE_RATE_BOARD, new Date(SAMPLE_RATE_BOARD.asOf));
   const faqs = HELP_CATEGORIES.flatMap((category) => category.faqs).filter((faq) => FAQ_IDS.includes(faq.id));
 
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-brand-navy text-ink-inverse">
+      <section className="relative overflow-hidden bg-brand text-ink-inverse">
         <HillsBackdrop />
-        <div className="relative mx-auto grid max-w-marketing gap-12 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:px-8">
+        <div className="relative mx-auto grid max-w-marketing gap-12 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-16 lg:px-8">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-ink-inverse/20 px-3 py-1 text-xs font-semibold text-accent">
+            <p className="inline-flex items-center gap-2 rounded-full border border-ink-inverse/20 bg-ink-inverse/10 px-3 py-1 text-xs font-semibold text-accent">
               <FlaskConical className="size-3.5" aria-hidden="true" />
               Product demo · sample data only
             </p>
@@ -86,44 +90,46 @@ export default function LandingPage() {
                 How it works
               </ButtonLink>
             </div>
+            {/* Trust signals */}
+            <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-ink-inverse/15 pt-6">
+              {[
+                { icon: <ShieldCheck className="size-4" />, text: "No local SIM needed" },
+                { icon: <Receipt className="size-4" />, text: "Rate shown before you pay" },
+                { icon: <Undo2 className="size-4" />, text: "Refund when you leave" },
+              ].map((item) => (
+                <div key={item.text} className="flex items-center gap-1.5 text-xs font-medium text-ink-inverse/75">
+                  <span className="text-accent" aria-hidden="true">{item.icon}</span>
+                  {item.text}
+                </div>
+              ))}
+            </div>
           </div>
 
-          <figure aria-label="Illustration of the wallet dashboard using sample data" className="relative">
-            <div className="rounded-xl bg-surface p-5 text-ink shadow-overlay sm:p-6">
-              <div className="flex items-center justify-between">
-                <p className="type-overline text-ink-subtle">Wallet balance</p>
-                <DemoBadge label="Sample" />
-              </div>
-              <CurrencyAmount money={{ amountMinor: wallet.balanceRwf, currency: "RWF" }} size="xl" className="mt-2 block" />
-              <p className="type-caption mt-1 text-ink-muted">
-                Day {wallet.dayNumber} of {WALLET_PERIOD_DAYS} · Verified tier
-              </p>
-              <div className="mt-5 divide-y divide-border border-t border-border">
-                {transactions.slice(0, 3).map((transaction) => (
-                  <TransactionRow key={transaction.id} transaction={transaction} interactive={false} />
-                ))}
-              </div>
-            </div>
-            <figcaption className="type-caption mt-3 text-center text-ink-inverse/70">Illustration with sample data</figcaption>
-          </figure>
+          {/* Device mockup showcase */}
+          <DeviceShowcase />
         </div>
       </section>
 
       {/* How it works */}
       <section id="how-it-works" className="scroll-mt-20 py-16 md:py-24">
         <div className="mx-auto max-w-marketing px-4 sm:px-6 lg:px-8">
-          <SectionIntro eyebrow="How it works" title="Built around a visitor's 30 days" description="One wallet from arrival to departure, designed for people who don't have a Rwandan bank account or SIM." />
+          <SectionIntro eyebrow="How it works" title="Built around a visitor's stay" description="One wallet from arrival to departure, designed for people who don't have a Rwandan bank account or SIM." />
           <ol className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((step, index) => (
-              <li key={step.title} className="rounded-lg border border-border bg-canvas p-6">
+              <li key={step.title} className="relative rounded-xl border border-border bg-surface p-6 shadow-card transition-shadow hover:shadow-raised">
                 <div className="flex items-center gap-3">
-                  <span className="flex size-10 items-center justify-center rounded-md bg-brand-navy text-ink-inverse" aria-hidden="true">
+                  <span className="flex size-10 items-center justify-center rounded-full bg-brand text-ink-inverse shadow-card" aria-hidden="true">
                     <step.icon className="size-5" />
                   </span>
                   <span className="type-overline text-ink-subtle">Step {index + 1}</span>
                 </div>
                 <h3 className="type-card-title mt-4 text-ink">{step.title}</h3>
                 <p className="type-caption mt-1.5 text-ink-muted">{step.body}</p>
+                {index < STEPS.length - 1 ? (
+                  <span className="absolute -right-2 top-10 hidden size-4 items-center justify-center lg:flex" aria-hidden="true">
+                    <ArrowRight className="size-3.5 text-border-strong" />
+                  </span>
+                ) : null}
               </li>
             ))}
           </ol>
@@ -135,34 +141,91 @@ export default function LandingPage() {
 
       {/* Exchange + local access */}
       <section id="exchange" className="scroll-mt-20 bg-canvas py-16 md:py-24">
-        <div className="mx-auto grid max-w-marketing gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8">
-          <div>
-            <SectionIntro
-              eyebrow="Exchange"
-              title="Know exactly what you'll get"
-              description={`Before any top-up you see the amount in your currency, the rate, the 2% fee, and the francs you'll receive. The rate is held for ${QUOTE_LOCK_MINUTES} minutes.`}
-            />
-            <ul className="mt-8 space-y-4">
-              <Feature icon={<Receipt />} title="Fees shown separately" body="The fee is never hidden inside the rate." />
-              <Feature icon={<Clock />} title={`${QUOTE_LOCK_MINUTES}-minute rate lock`} body="Take your time to review; request a fresh quote after it expires." />
-              <Feature icon={<Undo2 />} title="Convert back when you leave" body="Estimate what returns to your card before you go." />
-            </ul>
-          </div>
-          <div className="rounded-xl border border-border bg-surface p-6 shadow-raised sm:p-8">
-            <div className="flex items-center justify-between gap-3">
-              <h3 className="type-section-title text-ink">Sample top-up quote</h3>
-              <DemoBadge label="Sample rate" />
+        <div className="mx-auto max-w-marketing px-4 sm:px-6 lg:px-8">
+          <SectionIntro
+            eyebrow="Exchange"
+            title="Your currency, converted to Rwandan francs"
+            description={`Before any top-up you see the amount in your currency, the rate, the 2% fee, and the francs you'll receive. The rate is held for ${QUOTE_LOCK_MINUTES} minutes.`}
+          />
+          <div className="mt-10 grid gap-8 lg:grid-cols-2 lg:items-start">
+            {/* Currency flow visual */}
+            <div className="space-y-4">
+              <p className="type-overline text-accent-strong">Supported currencies</p>
+
+              {/* Currency cards with layered depth */}
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand/8 via-surface to-accent-soft p-5 shadow-raised">
+                {/* Decorative background circles */}
+                <div className="absolute -top-8 -right-8 size-32 rounded-full bg-brand-soft/60" aria-hidden="true" />
+                <div className="absolute -bottom-6 -left-6 size-24 rounded-full bg-accent-soft/80" aria-hidden="true" />
+                <div className="relative grid grid-cols-2 gap-3">
+                  {SUPPORTED_CURRENCIES.map((currency) => (
+                    <div
+                      key={currency.code}
+                      className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3.5 shadow-card transition-shadow hover:shadow-raised"
+                    >
+                      <span
+                        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-canvas text-xl shadow-card"
+                        aria-hidden="true"
+                      >
+                        {currency.flag}
+                      </span>
+                      <div>
+                        <p className="font-bold text-ink">{currency.code}</p>
+                        <p className="type-caption text-ink-muted">{currency.name}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Conversion arrow */}
+              <div className="flex items-center gap-3 py-1">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-brand/40 to-transparent" />
+                <div className="flex items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-bold text-ink-inverse shadow-raised">
+                  <TrendingUp className="size-4" aria-hidden="true" />
+                  Converted to RWF
+                </div>
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-brand/40 to-transparent" />
+              </div>
+
+              {/* RWF destination */}
+              <div className="flex items-center gap-4 rounded-xl border-2 border-brand/40 bg-gradient-to-r from-brand-soft to-accent-soft p-4 shadow-card">
+                <span
+                  className="flex size-12 shrink-0 items-center justify-center rounded-full bg-brand text-2xl shadow-raised"
+                  aria-hidden="true"
+                >
+                  🇷🇼
+                </span>
+                <div className="flex-1">
+                  <p className="font-bold text-brand-strong">Rwandan Franc (RWF)</p>
+                  <p className="type-caption text-ink-muted">Used for all payments in Rwanda</p>
+                </div>
+                <Globe className="size-5 shrink-0 text-brand/50" aria-hidden="true" />
+              </div>
+
+              <ul className="mt-2 space-y-3">
+                <Feature icon={<Receipt />} title="Fees shown separately" body="The fee is never hidden inside the rate." />
+                <Feature icon={<Clock />} title={`${QUOTE_LOCK_MINUTES}-minute rate lock`} body="Take your time to review; request a fresh quote after it expires." />
+                <Feature icon={<Undo2 />} title="Refund when you leave" body="Convert eligible remaining RWF back to your original currency before departure." />
+              </ul>
             </div>
-            <dl className="mt-4 divide-y divide-border">
-              <DetailRow label="You top up" value={formatMoney(quote.amount)} />
-              <DetailRow label="Top-up fee (2%)" value={formatMoney(quote.fee)} />
-              <DetailRow label="Charged to your card" value={formatMoney(quote.totalCharged)} />
-              <DetailRow label="Rate" value={formatRate("USD", quote.rateMilli)} />
-              <DetailRow label="You receive" value={formatMoney({ amountMinor: quote.receiveRwf, currency: "RWF" })} emphasis />
-            </dl>
-            <p className="type-caption mt-4 text-ink-subtle">
-              Sample rate dated {formatDateTime(SAMPLE_RATE_BOARD.asOf)} (Kigali). Not a live, official or guaranteed rate.
-            </p>
+            {/* Sample quote */}
+            <div className="rounded-xl border border-border bg-surface p-6 shadow-raised sm:p-8">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="type-section-title text-ink">Sample top-up quote</h3>
+                <DemoBadge label="Sample rate" />
+              </div>
+              <dl className="mt-4 divide-y divide-border">
+                <DetailRow label="You top up" value={formatMoney(quote.amount)} />
+                <DetailRow label="Top-up fee (2%)" value={formatMoney(quote.fee)} />
+                <DetailRow label="Charged to your card" value={formatMoney(quote.totalCharged)} />
+                <DetailRow label="Rate" value={formatRate("USD", quote.rateMilli)} />
+                <DetailRow label="You receive" value={formatMoney({ amountMinor: quote.receiveRwf, currency: "RWF" })} emphasis />
+              </dl>
+              <p className="type-caption mt-4 text-ink-subtle">
+                Sample rate dated {formatDateTime(SAMPLE_RATE_BOARD.asOf)} (Kigali). Not a live, official or guaranteed rate.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -184,6 +247,22 @@ export default function LandingPage() {
             {SERVICES.map((service) => (
               <ServiceCard key={service.slug} service={service} />
             ))}
+          </div>
+          <div className="mt-10 overflow-hidden rounded-2xl border border-brand/20 bg-gradient-to-br from-brand-soft via-surface to-accent-soft p-6 shadow-raised sm:p-8">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="mb-2 flex items-center gap-2">
+                  <MapPin className="size-4 text-brand" aria-hidden="true" />
+                  <p className="type-overline text-accent-strong">Ready to explore?</p>
+                </div>
+                <h3 className="type-section-title text-ink">Try every service in the demo</h3>
+                <p className="type-caption mt-1.5 text-ink-muted">Sign in with any email and the demo code to explore the full visitor journey.</p>
+              </div>
+              <ButtonLink href="/sign-in" size="lg" className="shrink-0">
+                Open the demo
+                <ArrowRight aria-hidden="true" />
+              </ButtonLink>
+            </div>
           </div>
         </div>
       </section>
@@ -242,7 +321,7 @@ export default function LandingPage() {
 
       {/* CTA */}
       <section className="px-4 pb-16 sm:px-6 md:pb-24 lg:px-8">
-        <div className="mx-auto flex max-w-marketing flex-col items-start gap-6 rounded-xl bg-brand-navy p-8 text-ink-inverse sm:p-12 md:flex-row md:items-center md:justify-between">
+        <div className="mx-auto flex max-w-marketing flex-col items-start gap-6 rounded-xl bg-brand p-8 text-ink-inverse sm:p-12 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="type-page-title">See the full visitor journey</h2>
             <p className="mt-2 max-w-lg text-ink-inverse/80">Sign in with any email and the demo code to explore the wallet, payments, data and guides.</p>
@@ -295,12 +374,139 @@ function CheckItem({ children, icon = <BadgeCheck /> }: { children: ReactNode; i
   );
 }
 
+/** Device mockup showcase — illustrative wallet UI, clearly labelled as demo. */
+function DeviceShowcase() {
+  return (
+    <figure
+      aria-label="Illustrative product showcase with sample wallet screens"
+      className="relative flex justify-center lg:justify-end"
+    >
+      {/* Ambient glow */}
+      <div className="absolute inset-0 -z-10 rounded-3xl bg-gradient-to-br from-brand-strong/40 via-transparent to-accent/30 blur-3xl" aria-hidden="true" />
+      <div className="absolute top-1/4 left-1/4 -z-10 size-48 rounded-full bg-accent/20 blur-2xl" aria-hidden="true" />
+
+      {/* Laptop mockup */}
+      <div className="relative w-full max-w-[22rem]">
+        {/* Screen bezel */}
+        <div className="rounded-2xl border-2 border-ink-inverse/25 bg-gradient-to-b from-ink-inverse/15 to-ink-inverse/5 p-2 shadow-overlay backdrop-blur-sm">
+          <div className="overflow-hidden rounded-xl bg-surface text-ink">
+            {/* Browser chrome */}
+            <div className="flex items-center gap-1.5 border-b border-border bg-canvas px-3 py-2">
+              <span className="size-2.5 rounded-full bg-danger-border" aria-hidden="true" />
+              <span className="size-2.5 rounded-full bg-warning-border" aria-hidden="true" />
+              <span className="size-2.5 rounded-full bg-success-border" aria-hidden="true" />
+              <div className="ml-2 flex-1 rounded-full bg-border/70 px-3 py-0.5 text-[0.6rem] text-ink-subtle">rwandavisitorwallet.com</div>
+            </div>
+            {/* Wallet balance panel */}
+            <div className="relative overflow-hidden bg-brand px-5 py-5 text-ink-inverse">
+              {/* Decorative wave */}
+              <svg aria-hidden="true" className="absolute -right-4 -bottom-4 h-20 w-32 text-brand-strong/60" viewBox="0 0 130 80">
+                <path d="M0 50c25-25 50-38 75-28s42 22 55 4v54H0z" fill="currentColor" />
+              </svg>
+              <div className="absolute -top-6 -right-6 size-24 rounded-full bg-brand-strong/25" aria-hidden="true" />
+              <p className="type-overline text-ink-inverse/60">Available balance</p>
+              <p className="type-amount mt-1 text-[1.6rem] leading-tight">RWF 142,500</p>
+              <p className="type-caption mt-0.5 text-ink-inverse/60">Day 8 of 30 · Verified tier · <span className="text-accent font-semibold">demo</span></p>
+              <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-ink-inverse/15">
+                <div className="h-full w-[27%] rounded-full bg-accent" />
+              </div>
+            </div>
+            {/* Quick actions */}
+            <div className="grid grid-cols-4 gap-2 p-3">
+              {[
+                { label: "Pay & Tip", bg: "bg-accent-soft", text: "text-accent-strong", icon: "⚡" },
+                { label: "Send", bg: "bg-brand-soft", text: "text-brand-strong", icon: "↗" },
+                { label: "Data", bg: "bg-info-soft", text: "text-info", icon: "📶" },
+                { label: "Refund", bg: "bg-surface-muted", text: "text-ink-muted", icon: "↩" },
+              ].map((action) => (
+                <div key={action.label} className={`flex flex-col items-center gap-1 rounded-lg ${action.bg} px-1 py-2`}>
+                  <span className="text-sm" aria-hidden="true">{action.icon}</span>
+                  <p className={`text-[0.58rem] font-semibold leading-tight text-center ${action.text}`}>{action.label}</p>
+                </div>
+              ))}
+            </div>
+            {/* Mini transaction list */}
+            <div className="divide-y divide-border px-3 pb-3">
+              <p className="type-overline pb-1.5 text-ink-subtle">Recent</p>
+              {[
+                { name: "Kigali Café · eKash", amount: "-RWF 4,200", color: "text-danger" },
+                { name: "MTN MoMo · 078…", amount: "-RWF 10,000", color: "text-danger" },
+                { name: "Card top-up · USD", amount: "+RWF 50,000", color: "text-success" },
+              ].map((row) => (
+                <div key={row.name} className="flex items-center justify-between py-1.5">
+                  <p className="text-[0.65rem] text-ink">{row.name}</p>
+                  <p className={`text-[0.65rem] font-semibold tabular ${row.color}`}>{row.amount}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* Laptop hinge + base */}
+        <div className="mx-auto mt-0.5 h-2 w-4/5 rounded-b-sm bg-ink-inverse/20" aria-hidden="true" />
+        <div className="mx-auto h-1 w-full rounded-b-xl bg-ink-inverse/10" aria-hidden="true" />
+
+        {/* Demo label */}
+        <div className="mt-3 flex justify-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-ink-inverse/15 px-3 py-1 text-[0.65rem] font-semibold text-ink-inverse/80">
+            <FlaskConical className="size-3" aria-hidden="true" />
+            Illustrative demo · sample data only
+          </span>
+        </div>
+      </div>
+
+      {/* Tablet mockup — floats right for depth */}
+      <div
+        className="absolute -right-4 bottom-12 hidden w-36 xl:-right-8 xl:w-44 lg:block"
+        aria-hidden="true"
+      >
+        <div className="rounded-2xl border-2 border-ink-inverse/20 bg-gradient-to-b from-ink-inverse/12 to-ink-inverse/5 p-1.5 shadow-raised">
+          <div className="overflow-hidden rounded-xl bg-surface">
+            {/* Status bar */}
+            <div className="flex items-center justify-between bg-canvas px-2.5 py-1.5">
+              <p className="text-[0.5rem] font-bold text-ink-subtle">9:41</p>
+              <div className="flex items-center gap-0.5">
+                <Wifi className="size-2.5 text-ink-subtle" />
+                <Signal className="size-2.5 text-ink-subtle" />
+              </div>
+            </div>
+            <div className="relative overflow-hidden bg-brand px-3 py-3 text-ink-inverse">
+              <div className="absolute -top-4 -right-4 size-16 rounded-full bg-brand-strong/30" aria-hidden="true" />
+              <p className="text-[0.5rem] font-semibold uppercase tracking-widest text-ink-inverse/60">Balance · demo</p>
+              <p className="mt-0.5 text-base font-bold tabular">RWF 142,500</p>
+              <p className="text-[0.5rem] text-ink-inverse/60">Day 8 of 30 · Verified</p>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5 p-2">
+              {[
+                { label: "Pay", bg: "bg-accent-soft", text: "text-accent-strong" },
+                { label: "Send", bg: "bg-brand-soft", text: "text-brand-strong" },
+                { label: "Data", bg: "bg-info-soft", text: "text-info" },
+                { label: "Refund", bg: "bg-surface-muted", text: "text-ink-muted" },
+              ].map((item) => (
+                <div key={item.label} className={`rounded-md ${item.bg} py-1.5 text-center`}>
+                  <p className={`text-[0.55rem] font-semibold ${item.text}`}>{item.label}</p>
+                </div>
+              ))}
+            </div>
+            {/* Home indicator */}
+            <div className="flex justify-center py-2">
+              <div className="h-0.5 w-10 rounded-full bg-ink-subtle/40" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <figcaption className="sr-only">Illustrative sample screens — not a live balance</figcaption>
+    </figure>
+  );
+}
+
 /** Decorative hill silhouettes behind the hero. */
 function HillsBackdrop() {
   return (
-    <svg aria-hidden="true" focusable="false" className="absolute inset-x-0 bottom-0 h-48 w-full text-brand-navy-soft" viewBox="0 0 1440 200" preserveAspectRatio="none">
+    <svg aria-hidden="true" focusable="false" className="absolute inset-x-0 bottom-0 h-48 w-full text-brand-strong" viewBox="0 0 1440 200" preserveAspectRatio="none">
       <path d="M0 140c160-70 300-100 440-60s250 70 400 20 330-110 600-40v140H0z" fill="currentColor" />
-      <path d="M0 175c200-40 380-50 560-20s360 40 520 0 260-40 360-25v70H0z" fill="var(--color-brand-navy)" opacity="0.6" />
+      <path d="M0 175c200-40 380-50 560-20s360 40 520 0 260-40 360-25v70H0z" fill="var(--color-brand)" opacity="0.6" />
     </svg>
   );
 }
+

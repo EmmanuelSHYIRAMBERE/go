@@ -54,7 +54,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <SidebarNav unreadCount={unreadCount} indicatorId="sidebar" />
         </div>
         <p className="type-caption border-t border-border px-5 py-3 text-ink-subtle">
-          Demo build · sample data only. No real money moves.
+          Demo · sample data only
         </p>
       </aside>
 
@@ -74,9 +74,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="lg:hidden">
               <BrandLogo href="/dashboard" />
             </div>
-            <p className="ml-auto hidden items-center gap-1.5 rounded-full bg-warning-soft px-3 py-1 text-xs font-semibold text-warning sm:inline-flex lg:ml-0">
+            <p className="ml-auto hidden items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand-strong sm:inline-flex lg:ml-0">
               <FlaskConical className="size-3.5" aria-hidden="true" />
-              Demo mode — sample data
+              Demo · sample data
             </p>
             <div className="ml-auto flex items-center gap-1">
               <NotificationBell unreadCount={unreadCount} />

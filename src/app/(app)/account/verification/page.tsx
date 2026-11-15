@@ -45,11 +45,11 @@ export default function VerificationPage() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <Card as="section" aria-labelledby="checks-heading">
-          <CardHeader id="checks-heading" title="Your checks" action={<DemoBadge label="Demo results" />} />
-          <ol className="space-y-5">
+          <CardHeader id="checks-heading" title="Identity checks" action={<DemoBadge label="Demo results" />} />
+          <ol className="space-y-3">
             {CHECKS.map((check) => (
-              <li key={check.title} className="flex gap-4">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-success-soft text-success [&_svg]:size-5" aria-hidden="true">
+              <li key={check.title} className="flex gap-4 rounded-xl border border-border bg-canvas p-4 transition-shadow hover:shadow-card">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-success-soft text-success [&_svg]:size-5" aria-hidden="true">
                   {check.icon}
                 </span>
                 <div className="min-w-0 flex-1">

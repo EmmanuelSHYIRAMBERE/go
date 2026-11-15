@@ -25,4 +25,5 @@ npm-debug.log*
 .vercel
 
 .claude/
+/docs/
 CLAUDE.md

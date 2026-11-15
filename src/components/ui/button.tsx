@@ -12,7 +12,7 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   outline: "border border-border-strong bg-surface text-ink hover:bg-surface-muted",
   ghost: "text-ink-muted hover:bg-surface-muted hover:text-ink",
   danger: "bg-danger text-ink-inverse hover:bg-danger-strong",
-  inverse: "bg-surface text-brand-navy hover:bg-surface-muted",
+  inverse: "bg-surface text-brand-strong hover:bg-surface-muted",
   /** Secondary action on navy surfaces: light text with a subtle outline. */
   "on-dark": "text-ink-inverse ring-1 ring-ink-inverse/35 ring-inset hover:bg-ink-inverse/10",
 };

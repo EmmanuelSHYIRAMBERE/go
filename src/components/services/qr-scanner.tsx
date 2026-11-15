@@ -126,10 +126,10 @@ export function QrScanner({ onResult }: QrScannerProps) {
 
   return (
     <div className="space-y-4">
-      <div className="relative flex aspect-square w-full max-w-sm items-center justify-center overflow-hidden rounded-xl bg-brand-navy sm:aspect-[4/3]">
+      <div className="relative flex aspect-square w-full max-w-sm items-center justify-center overflow-hidden rounded-xl bg-brand sm:aspect-[4/3]">
         <video ref={videoRef} muted playsInline className={showVideo ? "absolute inset-0 size-full object-cover" : "hidden"} aria-label="Camera preview" />
         {state.status === "scanning" ? (
-          <div aria-hidden="true" className="absolute inset-10 rounded-lg border-2 border-accent shadow-[0_0_0_9999px_rgb(20_33_61_/_0.45)]" />
+          <div aria-hidden="true" className="absolute inset-10 rounded-lg border-2 border-accent shadow-[0_0_0_9999px_rgb(0_0_0/_0.5)]" />
         ) : null}
         {state.status === "starting" ? (
           <div className="relative flex flex-col items-center gap-2 text-ink-inverse">

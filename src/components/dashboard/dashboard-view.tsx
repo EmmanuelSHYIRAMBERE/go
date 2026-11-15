@@ -1,49 +1,43 @@
 "use client";
 
-import { ArrowRight, Banknote, BellRing, BookUser, CalendarClock, QrCode, Send, Signal } from "lucide-react";
+import { ArrowRight, BookUser, CalendarClock, QrCode, Send, Signal, Wallet } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
-import { SpendBars } from "@/components/analytics/spend-bars";
-import { ServiceCard } from "@/components/finance/service-card";
-import { TransactionRow } from "@/components/finance/transaction-row";
+import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { DemoBadge } from "@/components/ui/badge";
-import { ButtonLink } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/feedback-states";
+import { Dialog } from "@/components/ui/dialog";
 import { ExchangeRateCard } from "@/components/wallet/exchange-rate-card";
 import { WalletSummaryCard } from "@/components/wallet/wallet-summary-card";
-import { computeAnalytics } from "@/lib/analytics";
-import { cn } from "@/lib/cn";
 import { EXPIRY_REMINDER_DAYS, EXTENSION_FEE_USD_MINOR } from "@/lib/config/product";
-import { formatDate, formatRelative, formatWeekday, greetingFor } from "@/lib/dates";
+import { formatDate, formatWeekday, greetingFor } from "@/lib/dates";
 import { getRateMilli } from "@/lib/fx";
-import { formatRwf, formatUsd } from "@/lib/money";
+import { formatUsd } from "@/lib/money";
 import { SAMPLE_RATE_BOARD } from "@/lib/mock-data/rates";
-import { SERVICES } from "@/lib/mock-data/services";
 import { useDemoStore } from "@/lib/store/demo-store";
 
 const QUICK_ACTIONS = [
-  { label: "Pay & tip", href: "/services/pay-tip", icon: QrCode },
-  { label: "Send money", href: "/services/mobile-money", icon: Send },
-  { label: "Buy data", href: "/services/esim", icon: Signal },
-  { label: "Find cash", href: "/services/atm-cash", icon: Banknote },
+  { label: "Pay & Tip", href: "/services/pay-tip", icon: QrCode, modal: "pay-tip" as const, description: "Scan or enter a merchant code", bg: "bg-accent-soft", text: "text-accent-strong" },
+  { label: "Send Money", href: "/services/mobile-money", icon: Send, modal: "send-money" as const, description: "MTN MoMo & Airtel Money", bg: "bg-brand-soft", text: "text-brand-strong" },
+  { label: "Buy Data", href: "/services/esim", icon: Signal, modal: null, description: "Roaming eSIM plans", bg: "bg-info-soft", text: "text-info" },
+  { label: "Wallet", href: "/wallet", icon: Wallet, modal: null, description: "Add money or refund", bg: "bg-surface-muted", text: "text-ink-muted" },
 ] as const;
 
-/** The signed-in home: balance, rate, quick actions, activity, spending, notifications and travel info. */
+type ModalType = "pay-tip" | "send-money" | null;
+
+/** The signed-in home: balance, rate, quick actions and travel info. */
 export function DashboardView() {
-  const { profile, wallet, transactions, notifications, unreadCount, now, data } = useDemoStore();
+  const { profile, wallet, data, now } = useDemoStore();
   const homeCurrency = data.preferences.homeCurrency;
-  const week = useMemo(() => computeAnalytics(transactions, "7d", now), [transactions, now]);
-  const recent = transactions.slice(0, 5);
-  const latestNotifications = notifications.slice(0, 3);
+  const [modal, setModal] = useState<ModalType>(null);
 
   return (
     <div className="space-y-6 sm:space-y-8">
       <PageHeader
         eyebrow={<p className="type-caption text-ink-muted">{formatWeekday(now.toISOString())} · Kigali (demo date)</p>}
         title={`${greetingFor(now)}, ${profile.givenName}`}
-        description="Here's your wallet at a glance. Everything below uses sample data."
+        description="Here’s your wallet at a glance. Everything below uses sample data."
         actions={<DemoBadge label="Demo data" />}
       />
 
@@ -55,147 +49,155 @@ export function DashboardView() {
       </div>
 
       <nav aria-label="Quick actions">
+        <p className="type-overline mb-3 text-ink-subtle">Quick actions</p>
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {QUICK_ACTIONS.map((action) => (
             <li key={action.href}>
-              <Link
-                href={action.href}
-                className="focus-ring flex h-full flex-col items-center gap-2 rounded-lg border border-border bg-surface p-4 text-center shadow-card transition-[border-color,translate] duration-[var(--duration-base)] hover:-translate-y-0.5 hover:border-border-strong"
-              >
-                <span className="flex size-11 items-center justify-center rounded-full bg-accent-soft text-accent-strong" aria-hidden="true">
-                  <action.icon className="size-5" />
-                </span>
-                <span className="text-sm font-semibold text-ink">{action.label}</span>
-              </Link>
+              {action.modal ? (
+                <button
+                  type="button"
+                  onClick={() => setModal(action.modal)}
+                  className="focus-ring group flex h-full w-full flex-col items-start gap-3 rounded-xl border border-border bg-surface p-4 shadow-card transition-[border-color,box-shadow,translate] duration-[var(--duration-base)] hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-raised"
+                >
+                  <span className={`flex size-11 items-center justify-center rounded-xl ${action.bg} ${action.text}`} aria-hidden="true">
+                    <action.icon className="size-5" />
+                  </span>
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-ink">{action.label}</p>
+                    <p className="type-caption text-ink-muted">{action.description}</p>
+                  </div>
+                </button>
+              ) : (
+                <Link
+                  href={action.href}
+                  className="focus-ring group flex h-full flex-col items-start gap-3 rounded-xl border border-border bg-surface p-4 shadow-card transition-[border-color,box-shadow,translate] duration-[var(--duration-base)] hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-raised"
+                >
+                  <span className={`flex size-11 items-center justify-center rounded-xl ${action.bg} ${action.text}`} aria-hidden="true">
+                    <action.icon className="size-5" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-ink">{action.label}</p>
+                    <p className="type-caption text-ink-muted">{action.description}</p>
+                  </div>
+                </Link>
+              )}
             </li>
           ))}
         </ul>
       </nav>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card as="section" aria-labelledby="recent-heading" className="lg:col-span-2">
-          <CardHeader
-            id="recent-heading"
-            title="Recent activity"
-            action={
-              <Link href="/transactions" className="focus-ring inline-flex items-center gap-1 rounded-sm text-sm font-semibold text-brand-strong hover:underline">
-                View all <ArrowRight className="size-4" aria-hidden="true" />
-              </Link>
-            }
-          />
-          {recent.length === 0 ? (
-            <EmptyState icon={<Send />} title="No activity yet" description="Payments and top-ups will appear here." />
-          ) : (
-            <div className="divide-y divide-border">
-              {recent.map((transaction) => (
-                <TransactionRow key={transaction.id} transaction={transaction} showDate={formatRelative(transaction.createdAt, now)} />
-              ))}
-            </div>
-          )}
-        </Card>
-
-        <div className="space-y-6">
-          <Card as="section" aria-labelledby="spend-heading">
-            <CardHeader
-              id="spend-heading"
-              title="Last 7 days"
-              description="Completed wallet spending, RWF"
-              action={
-                <Link href="/analytics" className="focus-ring rounded-sm text-sm font-semibold text-brand-strong hover:underline">
-                  Analytics
-                </Link>
-              }
-            />
-            <p className="type-amount text-2xl text-ink">{formatRwf(week.totalSpentRwf)}</p>
-            <p className="type-caption text-ink-muted">
-              {week.spendCount} payments
-              {week.topCategory ? ` · most on ${week.topCategory.label.toLowerCase()}` : ""}
+      <Card as="section" aria-labelledby="travel-heading">
+        <CardHeader id="travel-heading" title="Your stay" description="Useful reminders for this trip" />
+        <ul className="space-y-4">
+          <li className="flex gap-3">
+            <CalendarClock className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden="true" />
+            <p className="text-sm text-ink-muted">
+              <span className="font-semibold text-ink">Wallet ends {formatDate(wallet.expiresAt)}.</span>{" "}
+              Reminders on day {EXPIRY_REMINDER_DAYS[0]} and day {EXPIRY_REMINDER_DAYS[1]}; one extension available for {formatUsd(EXTENSION_FEE_USD_MINOR)} (illustrative).
             </p>
-            <SpendBars days={week.daily} className="mt-4" />
-          </Card>
-
-          <Card as="section" aria-labelledby="notifications-heading">
-            <CardHeader
-              id="notifications-heading"
-              title="Notifications"
-              description={unreadCount > 0 ? `${unreadCount} unread` : "You're all caught up"}
-              action={
-                <Link href="/account/notifications" className="focus-ring rounded-sm text-sm font-semibold text-brand-strong hover:underline">
-                  See all
-                </Link>
-              }
-            />
-            <ul className="space-y-3">
-              {latestNotifications.map((notification) => (
-                <li key={notification.id} className="flex gap-3">
-                  <span
-                    aria-hidden="true"
-                    className={cn("mt-1.5 size-2 shrink-0 rounded-full", notification.read ? "bg-border-strong" : "bg-brand")}
-                  />
-                  <div className="min-w-0">
-                    <p className={cn("text-sm text-ink", !notification.read && "font-semibold")}>
-                      {notification.title}
-                      {!notification.read ? <span className="sr-only"> (unread)</span> : null}
-                    </p>
-                    <p className="type-caption text-ink-subtle">{formatRelative(notification.createdAt, now)}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Card>
+          </li>
+          <li className="flex gap-3">
+            <BookUser className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden="true" />
+            <p className="text-sm text-ink-muted">
+              <span className="font-semibold text-ink">Your wallet isn&apos;t your visa.</span>{" "}
+              Check your permitted stay with the immigration authorities.
+            </p>
+          </li>
+        </ul>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <ButtonLink href="/services/immigration" variant="outline" size="sm">
+            Stay guide
+          </ButtonLink>
+          <ButtonLink href="/wallet" variant="outline" size="sm">
+            <ArrowRight className="size-4" aria-hidden="true" />
+            Wallet &amp; exchange
+          </ButtonLink>
         </div>
-      </div>
+      </Card>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <section aria-labelledby="services-heading" className="lg:col-span-2">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 id="services-heading" className="type-section-title text-ink">
-              Services
-            </h2>
-            <Link href="/services" className="focus-ring rounded-sm text-sm font-semibold text-brand-strong hover:underline">
-              All services
-            </Link>
+      {/* Pay & Tip quick-launch modal */}
+      <Dialog
+        open={modal === "pay-tip"}
+        onClose={() => setModal(null)}
+        title="Pay & Tip"
+        description="Scan a merchant QR or enter their code to pay in francs."
+        size="sm"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setModal(null)}>Cancel</Button>
+            <ButtonLink href="/services/pay-tip" onClick={() => setModal(null)}>
+              Open Pay &amp; Tip
+              <ArrowRight aria-hidden="true" />
+            </ButtonLink>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 rounded-xl border border-border bg-canvas p-4">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-strong" aria-hidden="true">
+              <QrCode className="size-5" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-ink">Scan or enter a merchant code</p>
+              <p className="type-caption text-ink-muted">The merchant name is verified before you pay.</p>
+            </div>
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {SERVICES.slice(0, 6).map((service) => (
-              <ServiceCard key={service.slug} service={service} compact />
+          <ul className="space-y-2">
+            {[
+              "Review merchant name, amount and tip before confirming",
+              "Tips carry no visitor fee — presets at 5%, 10%, 15%",
+              "Payments over USD 500 need an extra email code",
+            ].map((item) => (
+              <li key={item} className="flex items-start gap-2 type-caption text-ink-muted">
+                <span className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true">✓</span>
+                {item}
+              </li>
             ))}
-          </div>
-        </section>
-
-        <Card as="section" aria-labelledby="travel-heading">
-          <CardHeader id="travel-heading" title="Your stay" description="Useful reminders for this trip" />
-          <ul className="space-y-4">
-            <li className="flex gap-3">
-              <CalendarClock className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden="true" />
-              <p className="text-sm text-ink-muted">
-                <span className="font-semibold text-ink">Wallet ends {formatDate(wallet.expiresAt)}.</span> Reminders on day {EXPIRY_REMINDER_DAYS[0]} and day{" "}
-                {EXPIRY_REMINDER_DAYS[1]}; one extension available for {formatUsd(EXTENSION_FEE_USD_MINOR)} (illustrative).
-              </p>
-            </li>
-            <li className="flex gap-3">
-              <BookUser className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden="true" />
-              <p className="text-sm text-ink-muted">
-                <span className="font-semibold text-ink">Your wallet isn&apos;t your visa.</span> Check your permitted stay with the immigration authorities.
-              </p>
-            </li>
-            <li className="flex gap-3">
-              <BellRing className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden="true" />
-              <p className="text-sm text-ink-muted">
-                <span className="font-semibold text-ink">Leaving early?</span> Closing returns your balance to your card, minus a USD 3 deduction (illustrative).
-              </p>
-            </li>
           </ul>
-          <div className="mt-5 flex flex-wrap gap-2">
-            <ButtonLink href="/services/immigration" variant="outline" size="sm">
-              Stay guide
+        </div>
+      </Dialog>
+
+      {/* Send Money quick-launch modal */}
+      <Dialog
+        open={modal === "send-money"}
+        onClose={() => setModal(null)}
+        title="Send Money"
+        description="Send francs to an MTN MoMo or Airtel Money number."
+        size="sm"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setModal(null)}>Cancel</Button>
+            <ButtonLink href="/services/mobile-money" onClick={() => setModal(null)}>
+              Open Send Money
+              <ArrowRight aria-hidden="true" />
             </ButtonLink>
-            <ButtonLink href="/services/refunds" variant="outline" size="sm">
-              Refund guide
-            </ButtonLink>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 rounded-xl border border-border bg-canvas p-4">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-strong" aria-hidden="true">
+              <Send className="size-5" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-ink">MTN MoMo &amp; Airtel Money</p>
+              <p className="type-caption text-ink-muted">Recipient&apos;s name is confirmed before you send.</p>
+            </div>
           </div>
-        </Card>
-      </div>
+          <ul className="space-y-2">
+            {[
+              "Enter the recipient\u2019s Rwandan number",
+              "Name lookup confirms who owns the number",
+              "Review amount, recipient and balance before confirming",
+            ].map((item) => (
+              <li key={item} className="flex items-start gap-2 type-caption text-ink-muted">
+                <span className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true">✓</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Dialog>
     </div>
   );
 }

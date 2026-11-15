@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BadgeCheck, LogOut } from "lucide-react";
+import { BadgeCheck, ChevronDown, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { AccountNav } from "@/components/account/account-nav";
@@ -161,18 +161,25 @@ export function ProfileView() {
                   </Select>
                 </FormField>
               </div>
-              <div className="space-y-4 border-t border-border pt-5">
-                {PREFERENCE_SWITCHES.map((item) => (
-                  <Switch
-                    key={item.key}
-                    id={`pref-${item.key}`}
-                    checked={preferences[item.key]}
-                    onCheckedChange={(checked) => setPreference(item.key, checked)}
-                    label={item.label}
-                    description={item.description}
-                  />
-                ))}
-              </div>
+              {/* Notification preferences — collapsible secondary section */}
+              <details className="group border-t border-border pt-4">
+                <summary className="focus-ring flex cursor-pointer list-none items-center justify-between rounded-sm py-1 text-sm font-semibold text-ink [&::-webkit-details-marker]:hidden">
+                  Notification preferences
+                  <ChevronDown className="size-4 text-ink-subtle transition-transform group-open:rotate-180" aria-hidden="true" />
+                </summary>
+                <div className="mt-4 space-y-4">
+                  {PREFERENCE_SWITCHES.map((item) => (
+                    <Switch
+                      key={item.key}
+                      id={`pref-${item.key}`}
+                      checked={preferences[item.key]}
+                      onCheckedChange={(checked) => setPreference(item.key, checked)}
+                      label={item.label}
+                      description={item.description}
+                    />
+                  ))}
+                </div>
+              </details>
             </div>
           </Card>
         </div>

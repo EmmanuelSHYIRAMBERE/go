@@ -8,6 +8,7 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import { DetailRow } from "@/components/ui/misc";
+import { AccordionItem } from "@/components/ui/accordion";
 import { useToast } from "@/components/ui/toast";
 import { formatDate } from "@/lib/dates";
 import { foreignToRwf, formatRate, getRateMilli } from "@/lib/fx";
@@ -68,49 +69,27 @@ export function EsimPlans() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+      {latestPlan ? (
         <Card as="section" aria-labelledby="current-plan-heading">
           <CardHeader id="current-plan-heading" title="Your data" action={<DemoBadge />} />
-          {latestPlan ? (
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <span className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent-strong" aria-hidden="true">
-                <Signal className="size-6" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-ink">{latestPlan.title}</p>
-                <p className="type-caption text-ink-muted">Purchased {formatDate(latestPlan.createdAt)} · {latestPlan.reference}</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Badge tone="neutral">Not installed</Badge>
-                  <Badge tone="neutral">Usage unavailable</Badge>
-                </div>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent-strong" aria-hidden="true">
+              <Signal className="size-6" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-ink">{latestPlan.title}</p>
+              <p className="type-caption text-ink-muted">Purchased {formatDate(latestPlan.createdAt)} · {latestPlan.reference}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Badge tone="neutral">Not installed</Badge>
+                <Badge tone="neutral">Usage unavailable</Badge>
               </div>
             </div>
-          ) : (
-            <p className="type-body text-ink-muted">No data plan yet.</p>
-          )}
+          </div>
           <p className="type-caption mt-4 text-ink-subtle">
-            Data remaining and validity would come from the eSIM partner. This demo has no provider connection, so it doesn&apos;t show usage.
+            Data remaining and validity would come from the eSIM partner. This demo has no provider connection.
           </p>
         </Card>
-
-        <Card as="section" aria-labelledby="compat-heading">
-          <CardHeader id="compat-heading" title="Before you buy" />
-          <ul className="space-y-3 text-sm text-ink-muted">
-            <li className="flex gap-2.5">
-              <Smartphone className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
-              Your phone must support eSIM and be carrier-unlocked. The mobile app checks this; a website can&apos;t.
-            </li>
-            <li className="flex gap-2.5">
-              <Wifi className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
-              Install over Wi-Fi before you need the data.
-            </li>
-            <li className="flex gap-2.5">
-              <Info className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
-              Coverage and network details would be confirmed by the eSIM partner — none are confirmed yet.
-            </li>
-          </ul>
-        </Card>
-      </div>
+      ) : null}
 
       <section aria-labelledby="plans-heading">
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
@@ -129,16 +108,24 @@ export function EsimPlans() {
                     <h3 className="type-section-title text-ink">{plan.name}</h3>
                     <DemoBadge label="Sample" />
                   </div>
-                  <p className="type-amount mt-3 text-3xl text-ink">{formatData(plan.dataMb)}</p>
-                  <p className="type-caption text-ink-muted">
-                    {plan.validityDays} days · data only
-                  </p>
+                  {/* Data allowance hero */}
+                  <div className="mt-4 rounded-xl bg-brand-soft px-4 py-3 text-center">
+                    <p className="type-amount text-3xl font-bold text-brand-strong">{formatData(plan.dataMb)}</p>
+                    <p className="type-caption mt-0.5 text-ink-muted">{plan.validityDays} days validity · data only</p>
+                  </div>
                   <p className="type-caption mt-3 flex-1 text-ink-muted">{plan.summary}</p>
-                  <dl className="mt-4 divide-y divide-border border-t border-border">
-                    <DetailRow label="Price" value={formatUsd(plan.priceUsdMinor)} />
-                    <DetailRow label="From wallet" value={`≈ ${formatRwf(priceRwf)}`} />
-                  </dl>
-                  <Button className="mt-4" variant="outline" fullWidth onClick={() => setPurchase({ plan, status: "review" })}>
+                  {/* Pricing */}
+                  <div className="mt-4 rounded-lg border border-border bg-canvas px-4 py-3">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="type-caption text-ink-muted">Price</span>
+                      <span className="font-bold text-ink">{formatUsd(plan.priceUsdMinor)}</span>
+                    </div>
+                    <div className="mt-1 flex items-baseline justify-between gap-2">
+                      <span className="type-caption text-ink-muted">From wallet</span>
+                      <span className="type-caption font-semibold text-ink-muted">≈ {formatRwf(priceRwf)}</span>
+                    </div>
+                  </div>
+                  <Button className="mt-4" fullWidth onClick={() => setPurchase({ plan, status: "review" })}>
                     Choose {plan.name}
                   </Button>
                 </Card>
@@ -147,6 +134,30 @@ export function EsimPlans() {
           })}
         </ul>
       </section>
+
+      {/* Before you buy — collapsible secondary details */}
+      <div className="rounded-lg border border-border bg-surface px-5">
+        <AccordionItem title="Before you buy" name="esim-secondary">
+          <ul className="space-y-3 text-sm text-ink-muted">
+            <li className="flex gap-2.5">
+              <Smartphone className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+              Your phone must support eSIM and be carrier-unlocked. Not all phones support eSIM — check your device settings or manufacturer’s website.
+            </li>
+            <li className="flex gap-2.5">
+              <Wifi className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+              Install over Wi-Fi before you need the data. Activation requires a stable internet connection.
+            </li>
+            <li className="flex gap-2.5">
+              <Info className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+              Coverage, network details and activation steps would be confirmed by the eSIM partner — none are confirmed yet for this demo.
+            </li>
+            <li className="flex gap-2.5">
+              <Info className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+              Plans shown are illustrative. Actual data allowances, validity and prices are subject to provider confirmation.
+            </li>
+          </ul>
+        </AccordionItem>
+      </div>
 
       <Dialog
         open={purchase !== null}
